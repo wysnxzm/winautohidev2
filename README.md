@@ -24,9 +24,14 @@
 
 ## 使用
 
-1. 请先安装 [AutoHotKeyV2](http://www.autohotkey.com/)
+### 方法一
 
-2. 下载所有`.ahk`文件
-3. 运行 `winautohidev2.ahk` 
-4. 使用`Ctrl+Left`将窗口屏幕隐藏到左侧，最大化窗口不可隐藏
+1. 请先安装 [AutoHotKeyV2](http://www.autohotkey.com/)。
 
+2. 下载所有`.ahk`文件。
+3. 运行 `winautohidev2.ahk` 。
+4. 使用`Ctrl+Left`将窗口屏幕隐藏到左侧，最大化窗口不可隐藏。
+
+### 方法二
+
+1. 前往 [Release](https://github.com/windwhim/winautohidev2/release) 下载最新版。

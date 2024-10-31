@@ -25,8 +25,14 @@ The following is partially quoted from [winautohide](https://github.com/scavin/w
 
 ## Usage
 
-1. Please install [AutoHotKeyV2] (http://www.autohotkey.com/)
+### One
 
-2. Download all `.ahk` files or clone this repo
-3. Run `winautohidev2.ahk`
+1. Please install [AutoHotKeyV2](http://www.autohotkey.com/).
+
+2. Download all `.ahk` files or clone this repo.
+3. Run `winautohidev2.ahk`.
 4. Use `Ctrl + Left` to hide the window screen to the left, the maximized window cannot be hidden.
+
+### Two
+
+1. Go to [Release](https://github.com/windwhim/winautohidev2/release) and download the latest version.
