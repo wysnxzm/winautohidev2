@@ -37,4 +37,4 @@ The following is partially quoted from [winautohide](https://github.com/scavin/w
 
 ### Two
 
-1. Go to [Release](https://github.com/windwhim/winautohidev2/release) and download the latest version.
+1. Go to [Release](https://github.com/windwhim/winautohidev2/releases) and download the latest version.
