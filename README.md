@@ -4,7 +4,7 @@
 
 ## 介绍
 
-![introduction](assest\introduction.gif)
+![introduction](assest/introduction.gif)
 
 使用快捷键将当前窗口隐藏到屏幕边缘。
 
