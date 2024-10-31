@@ -4,7 +4,7 @@
 
 ## Introduction
 
-![introduction](assest\introduction.gif)
+![introduction](assest/introduction.gif)
 
 Use shortcuts to hide the current window to the edge of the screen.
 
