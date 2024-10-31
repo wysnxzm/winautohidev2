@@ -4,6 +4,8 @@
 
 ## Introduction
 
+![introduction](assest\introduction.gif)
+
 Use shortcuts to hide the current window to the edge of the screen.
 
 Inspired by [Preme for Windows](http://www.premeforwindows.com/) and [winautohide](https://github.com/scavin/winautohide).

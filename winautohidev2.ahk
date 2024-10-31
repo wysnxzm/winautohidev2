@@ -140,7 +140,6 @@ hideWindow(id){
 			WinMove(,Y,,H,window)
 		}
 		winSmoothMove(newX,Y,window)
-		WinSetExStyle "-0x80", window
 		WinSetAlwaysOnTop(1, window)
 		pushTo(hiddenWindowIds,id)
 	}
@@ -152,7 +151,6 @@ showWindow(id){
 	NewX := showMargin+leftEdge
 	; WinMove(NewX, Y,,,window)
 	winSmoothMove(newX,Y,window)
-	WinSetExStyle "+0x80", window
 	pushTo(suspendWindowIds,id)
 }
 isWindowMove(id){
