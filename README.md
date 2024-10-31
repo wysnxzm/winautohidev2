@@ -36,4 +36,4 @@
 
 ### 方法二
 
-1. 前往 [Release](https://github.com/windwhim/winautohidev2/release) 下载最新版。
+1. 前往 [Release](https://github.com/windwhim/winautohidev2/releases) 下载最新版。
