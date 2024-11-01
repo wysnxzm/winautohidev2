@@ -37,3 +37,9 @@
 ### 方法二
 
 1. 前往 [Release](https://github.com/windwhim/winautohidev2/releases) 下载最新版。
+
+## Todo
+1. 增加上边和右边隐藏
+2. 多窗口同时显示后鼠标移动切换层级
+3. 隐藏后隐藏任务栏图标，拖拽后恢复
+4. 窗口隐藏后减少占用面积
