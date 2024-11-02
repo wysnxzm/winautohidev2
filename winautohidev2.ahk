@@ -6,7 +6,7 @@ SetWinDelay(5)
 
 ; 隐藏时留出的长度以及显示时距离屏幕边缘的长度
 ; 由于DPI关系，margin设置，不同DPI可能不同
-margin := 20
+margin := 10
 showMargin := 0
 global margin
 global showMargin
@@ -15,13 +15,13 @@ moveDistance := 30
 global moveDistance
 
 ; 隐藏的窗口
-hiddenWindowIds := []
-global hiddenWindowIds
+hiddenWindowList := []
+global hiddenWindowList
 ; 中间态窗口，鼠标放置暂时显示的窗口
-suspendWindowIds := []
-global suspendWindowIds
+suspendWindowList := []
+global suspendWindowList
 
-maxHeight := 1000
+maxHeight := 800
 
 ; 加入右键菜单
 myMenu := A_TrayMenu
@@ -32,15 +32,22 @@ myMenu.Add("Reset all hidden windows", Reset)
 Reset(*){
 	results := getSide()
 	leftMonitor := results[1]
+	rightMonitor := results[2]
 	leftEdge := results[3]
-	MonitorGet leftMonitor,,&topEdge
-	dpiValue := getDPI(leftMonitor)
+	rightEdge := results[4]
+	MonitorGet leftMonitor,,&leftTopEdge
+	MonitorGet rightMonitor,,&rightTopEdge
+	leftDPI := getDPI(leftMonitor)
+	rightDPI := getDPI(rightMonitor)
 	; 多显示器支持
 	global leftEdge
-	global dpiValue
-	global topEdge
-	for i,v in hiddenWindowIds{
-		WinMove(showMargin+leftEdge,showMargin+topEdge,,,"ahk_id" v)
+	global rightEdge
+	global leftTopEdge
+	global rightTopEdge
+	global leftDPI
+	global rightDPI
+	for i,v in hiddenWindowList{
+		WinMove(showMargin+leftEdge,showMargin+leftTopEdge,,,"ahk_id" v.id)
 	}
 }
 
@@ -49,47 +56,46 @@ Reset(*){
 SetTimer WatchCursor, 200
 
 WatchCursor(){
-	; 某些时候会出错
-	Try 
-	{
-		DPI.MouseGetPos , , &id, &control
+	; DPI.MouseGetPos 某些时候会出错
+	Try{
+		DPI.MouseGetPos , , &ahkId, &control
 	    ; 判断是否为中间态，是则不需要移动
-	    isSuspend := suspendWindowIds.Find((v) => (v =id))
-	    if isSuspend > 0{
+	    suspendWindowIndex := suspendWindowList.Find((v) => (v.id =ahkId))
+	    if suspendWindowIndex > 0{
 	    	;拖动窗口去除隐藏
-	    	if (isWindowMove(id)=1){
-	    		isHidden := hiddenWindowIds.Find((v) => (v =id))
-	    		hiddenWindowIds.RemoveAt(isHidden)
-	    		suspendWindowIds.RemoveAt(isSuspend)
-	    		WinSetAlwaysOnTop(0,"ahk_id" id)
-	    		; ToolTip("去除隐藏")
-	    		; sleep(1000)
-	    		; ToolTip
+	    	window := suspendWindowList.Get(suspendWindowIndex)
+	    	if (isWindowMove(window)=1){
+	    		hiddenWindowIndex := hiddenWindowList.Find((v) => (v.id =ahkId))
+	    		hiddenWindowList.RemoveAt(hiddenWindowIndex)
+	    		suspendWindowList.RemoveAt(suspendWindowIndex)
+	    		WinSetAlwaysOnTop(0,"ahk_id" ahkId)
 	    	}
 	    }
 	    else{
 	    	; 不为中间态时，则若为其他隐藏窗口则不隐藏，接着判断是否为隐藏的窗口
-		    isHidden := hiddenWindowIds.Find((v) => (v =id))
+		    hiddenWindowIndex := hiddenWindowList.Find((v) => (v.id =ahkId))
 		    ; 隐藏窗口则显示
-		    if isHidden>0 {
-		    	showWindow(id)
+		    if hiddenWindowIndex>0 {
+		    	window := hiddenWindowList.Get(hiddenWindowIndex)
+		    	showWindow(window)
 		    }
 		    else{
 		    	;按顺序隐藏
-		    	if suspendWindowIds.Length > 0{
-		    		suspendId := suspendWindowIds.Get(suspendWindowIds.Length)
-			    	suspendWindowIds.RemoveAt(suspendWindowIds.Length)
-			    	hideWindow(suspendId)
+		    	if suspendWindowList.Length > 0{
+		    		suspendWindow := suspendWindowList.Get(suspendWindowList.Length)
+			    	suspendWindowList.RemoveAt(suspendWindowList.Length)
+			    	hideWindow(suspendWindow)
 	    		} 
 		    }
 	    }
+
 	    ; else{
 	    ; 	; 不为中间态时，则直接隐藏，接着判断是否为隐藏的窗口
-		;     isHidden := hiddenWindowIds.Find((v) => (v =id))
+		;     isHidden := hiddenWindowList.Find((v) => (v =id))
 		;     ; 切换到其他窗口继续隐藏
-	    ; 	if suspendWindowIds.Length > 0{
-	    ; 		suspendId := suspendWindowIds.Get(1)
-		;     	suspendWindowIds.RemoveAt(1)
+	    ; 	if suspendWindowList.Length > 0{
+	    ; 		suspendId := suspendWindowList.Get(1)
+		;     	suspendWindowList.RemoveAt(1)
 		;     	hideWindow(suspendId)
 	    ; 	} 
 		;     ; 隐藏窗口则显示
@@ -105,75 +111,140 @@ WatchCursor(){
 ^Left::{
 	results := getSide()
 	leftMonitor := results[1]
+	rightMonitor := results[2]
 	leftEdge := results[3]
-	MonitorGet leftMonitor,,&topEdge
-	dpiValue := getDPI(leftMonitor)
+	rightEdge := results[4]
+	MonitorGet leftMonitor,,&leftTopEdge
+	MonitorGet rightMonitor,,&rightTopEdge
+	leftDPI := getDPI(leftMonitor)
+	rightDPI := getDPI(rightMonitor)
 	; 多显示器支持
 	global leftEdge
-	global dpiValue
-	global topEdge
+	global rightEdge
+	global leftTopEdge
+	global rightTopEdge
+	global leftDPI
+	global rightDPI
 
-	id := WinGetID("A")
-	hideWindow(id)
+	ahkId := WinGetID("A")
+	hiddenWindowIndex := hiddenWindowList.Find((v) => (v.id =ahkId))
+	suspendWindowIndex := suspendWindowList.Find((v) => (v.id =ahkId))
+	if hiddenWindowIndex >0 {
+		hiddenWindowList.RemoveAt(hiddenWindowIndex)
+	}
+	if suspendWindowIndex > 0{
+		suspendWindowList.RemoveAt(suspendWindowIndex)
+	}
+	hideWindow({id:ahkId,mode:"left"})
 }
-F4::{
-	; getWinPos
+
+^Right::{
+	results := getSide()
+	leftMonitor := results[1]
+	rightMonitor := results[2]
+	leftEdge := results[3]
+	rightEdge := results[4]
+	MonitorGet leftMonitor,,&leftTopEdge
+	MonitorGet rightMonitor,,&rightTopEdge
+	leftDPI := getDPI(leftMonitor)
+	rightDPI := getDPI(rightMonitor)
 	; 多显示器支持
-	
-	id := WinGetID("A")
-	window := "ahk_id" id
+	global leftEdge
+	global rightEdge
+	global leftTopEdge
+	global rightTopEdge
+	global leftDPI
+	global rightDPI
 
-	; Get window position and size
-	DPI.WinGetPos(&X, &Y, &W, &H, window)
-	MsgBox "Window Position: " X ", " Y "`nWindow Size: " W " x " H
+	ahkId := WinGetID("A")
+	;判断当前窗口是否已经隐藏，若已存在则删除
+	hiddenWindowIndex := hiddenWindowList.Find((v) => (v.id =ahkId))
+	suspendWindowIndex := suspendWindowList.Find((v) => (v.id =ahkId))
+	if hiddenWindowIndex >0 {
+		hiddenWindowList.RemoveAt(hiddenWindowIndex)
+	}
+	if suspendWindowIndex > 0{
+		suspendWindowList.RemoveAt(suspendWindowIndex)
+	}
+	hideWindow({id:ahkId,mode:"right"})
+	
 }
 
-F8::{
-	getSide()
+^F4::{
+	hiddenCount := hiddenWindowList.Length
+	Loop hiddenCount {
+		hiddenWindowList.RemoveAt(hiddenWindowList.Length)
+	}
 }
 
 
-hideWindow(id){
+hideWindow(window){
 	
-	window := "ahk_id" id
+	windowText := "ahk_id" window.id
+
 	;最大化窗口不可隐藏
-	if WinExist(window) and WinGetMinMax(window) != 1{
-		DPI.WinGetPos(&X, &Y, &W, &H,window)
+	if WinExist(windowText) and WinGetMinMax(windowText) != 1{
+		DPI.WinGetPos(&X, &Y, &W, &H,windowText)
 		; 乘以dpi 使用DPI缩放
-		NewX := -Round(W*dpiValue)+leftEdge+margin
-		; WinMove(NewX, Y,,,window) 
-		Y :=Max(Y,topEdge)
-		if H>maxHeight{
-			WinMove(,Y,,H,window)
+		mode := window.mode
+		if mode="left"{
+			NewX := -Round(W*leftDPI)+leftEdge+Round(margin*leftDPI)
+			Y :=Max(Y,leftTopEdge)
 		}
-		winSmoothMove(newX,Y,window)
-		WinSetAlwaysOnTop(1, window)
-		pushTo(hiddenWindowIds,id)
+		else if mode="right"{
+			NewX := rightEdge-Round(margin*rightDPI)
+			Y :=Max(Y,rightTopEdge)
+		}
+		
+		if H>maxHeight{
+			WinMove(,Y,,H,windowText)
+		}
+		winSmoothMove(newX,Y,windowText)
+		WinSetAlwaysOnTop(1, windowText)
+		pushTo(hiddenWindowList,window)
 	}
 }
 
-showWindow(id){
-	window := "ahk_id" id
-	DPI.WinGetPos(&X, &Y, &W, &H,window)
-	NewX := showMargin+leftEdge
+showWindow(window){
+	windowText := "ahk_id" window.id
+	mode := window.mode
+	DPI.WinGetPos(&X, &Y, &W, &H,windowText)
+	if mode="left"{
+		NewX := showMargin+leftEdge
+	}
+	else if mode="right"{
+		NewX := rightEdge-Round(showMargin*rightDPI)-Round(W*rightDPI)
+	}
 	; WinMove(NewX, Y,,,window)
-	winSmoothMove(newX,Y,window)
-	pushTo(suspendWindowIds,id)
+	winSmoothMove(newX,Y,windowText)
+	pushTo(suspendWindowList,window)
 }
-isWindowMove(id){
-	window := "ahk_id" id
-	DPI.WinGetPos(&X, &Y, &W, &H,window)
+isWindowMove(window){
+	windowText := "ahk_id" window.id
+	mode := window.mode
+	DPI.WinGetPos(&X, &Y, &W, &H,windowText)
 	; 当窗口横坐标大于margin一定程度，认为移动
-	if (X>showMargin+moveDistance){
-		return 1
+	if mode = "left"{
+		if (X>Round(showMargin*leftDPI)+leftEdge+moveDistance){
+			return 1
+		}
+		else{
+			return 0
+		}
 	}
-	else{
-		return 0
+	else if mode="right"{
+		if (X<rightEdge-moveDistance-Round(showMargin*rightDPI) - Round(W*rightDPI)){
+			return 1
+		}
+		else{
+			return 0
+		}
 	}
+	
 }
-; 列表不允许存在相同的值
+; 列表不允许存在相同的窗口
 pushTo(array,value){
-	if array.Find((v) => (v =value)) <= 0{
+	if array.Find((v) => (v.id =value.id)) <= 0{
 		array.push(value)
 	}
 }
@@ -191,11 +262,11 @@ createArray(a, b,length) {
     return arr
 }
 ; 平滑移动
-winSmoothMove(newX,newY,window){
-	DPI.WinGetPos(&X,, ,, window)
+winSmoothMove(newX,newY,windowText){
+	DPI.WinGetPos(&X,, ,, windowText)
 	arr := createArray(X,NewX,10)
 	for i,v in arr{
-		WinMove(v,newY,,,window)
+		WinMove(v,newY,,,windowText)
 	}
 }
 
@@ -218,7 +289,6 @@ getSide(){
 			rightMonitor:=i
 		}
 		i+=1
-		; MsgBox(i "," leftEdgeTemp "," rightEdgeTemp)
 	}
 	return [leftMonitor,rightMonitor,leftEdge,rightEdge]
 }
@@ -226,7 +296,7 @@ getSide(){
 getDPI(monitorIndex){
 	monitorHandles := DPI.GetMonitorHandles()
 	dpiValue := DPI.GetForMonitor(monitorHandles.Get(monitorIndex))
-	dpiValue := dpiValue / 120 * 125 / 100
+	dpiValue := dpiValue / 96
 	return dpiValue
 }
 
