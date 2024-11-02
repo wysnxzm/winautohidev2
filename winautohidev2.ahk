@@ -30,11 +30,12 @@ myMenu.Add("Reset all hidden windows", Reset)
 
 
 Reset(*){
+	results := getSide()
+	leftMonitor := results[1]
+	leftEdge := results[3]
+	MonitorGet leftMonitor,,&topEdge
+	dpiValue := getDPI(leftMonitor)
 	; 多显示器支持
-	MonitorGet 1, &leftEdge,&topEdge
-	monitorHandles := DPI.GetMonitorHandles()
-	dpiValue := DPI.GetForMonitor(monitorHandles.Get(1))
-	dpiValue := dpiValue / 120 * 125 / 100
 	global leftEdge
 	global dpiValue
 	global topEdge
@@ -102,10 +103,12 @@ WatchCursor(){
 
 
 ^Left::{
-	MonitorGet 1, &leftEdge,&topEdge
-	monitorHandles := DPI.GetMonitorHandles()
-	dpiValue := DPI.GetForMonitor(monitorHandles.Get(1))
-	dpiValue := dpiValue / 120 * 125 / 100
+	results := getSide()
+	leftMonitor := results[1]
+	leftEdge := results[3]
+	MonitorGet leftMonitor,,&topEdge
+	dpiValue := getDPI(leftMonitor)
+	; 多显示器支持
 	global leftEdge
 	global dpiValue
 	global topEdge
@@ -123,6 +126,10 @@ F4::{
 	; Get window position and size
 	DPI.WinGetPos(&X, &Y, &W, &H, window)
 	MsgBox "Window Position: " X ", " Y "`nWindow Size: " W " x " H
+}
+
+F8::{
+	getSide()
 }
 
 
@@ -190,5 +197,36 @@ winSmoothMove(newX,newY,window){
 	for i,v in arr{
 		WinMove(v,newY,,,window)
 	}
+}
+
+;多显示器支持
+;获取左右边界和显示器索引
+getSide(){
+	leftEdge := 1
+	rightEdge := -1
+	leftMonitor :=0
+	rightMonitor :=0
+	i:=1
+	while i<=MonitorGetCount(){
+		MonitorGet i, &leftEdgeTemp,,&rightEdgeTemp
+		if leftEdge > leftEdgeTemp{
+			leftEdge := leftEdgeTemp
+			leftMonitor := i
+		}
+		if rightEdge<rightEdgeTemp{
+			rightEdge:=rightEdgeTemp
+			rightMonitor:=i
+		}
+		i+=1
+		; MsgBox(i "," leftEdgeTemp "," rightEdgeTemp)
+	}
+	return [leftMonitor,rightMonitor,leftEdge,rightEdge]
+}
+
+getDPI(monitorIndex){
+	monitorHandles := DPI.GetMonitorHandles()
+	dpiValue := DPI.GetForMonitor(monitorHandles.Get(monitorIndex))
+	dpiValue := dpiValue / 120 * 125 / 100
+	return dpiValue
 }
 
