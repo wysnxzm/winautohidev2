@@ -46,9 +46,19 @@ Reset(*){
 	global rightTopEdge
 	global leftDPI
 	global rightDPI
-	for i,v in hiddenWindowList{
-		WinMove(showMargin+leftEdge,showMargin+leftTopEdge,,,"ahk_id" v.id)
+
+	hiddenLength := hiddenWindowList.Length
+	Loop hiddenLength {
+		window := hiddenWindowList.Get(hiddenWindowList.Length)
+		hiddenWindowList.RemoveAt(hiddenWindowList.Length)
+		WinMove(showMargin+leftEdge,showMargin+leftTopEdge,,,"ahk_id" window.id)
+		WinSetAlwaysOnTop(0,"ahk_id" window.id)
 	}
+	suspendLength := suspendWindowList.Length
+	Loop suspendLength {
+		suspendWindowList.RemoveAt(suspendWindowList.Length)
+	}
+
 }
 
 
@@ -171,10 +181,7 @@ WatchCursor(){
 }
 
 ^F4::{
-	hiddenCount := hiddenWindowList.Length
-	Loop hiddenCount {
-		hiddenWindowList.RemoveAt(hiddenWindowList.Length)
-	}
+	Reset()
 }
 
 
@@ -213,7 +220,7 @@ showWindow(window){
 		NewX := showMargin+leftEdge
 	}
 	else if mode="right"{
-		NewX := rightEdge-Round(showMargin*rightDPI)-Round(W*rightDPI)
+		NewX := rightEdge-Round(showMargin*rightDPI)-Round(W*rightDPI)+5
 	}
 	; WinMove(NewX, Y,,,window)
 	winSmoothMove(newX,Y,windowText)
