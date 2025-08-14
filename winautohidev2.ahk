@@ -1,6 +1,7 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 #include Array.ahk
 #include DPI.ahk
+#SingleInstance
 ; 实现窗口平滑移动，越小越平滑，最小为-1
 SetWinDelay(5)
 
@@ -95,7 +96,7 @@ WatchCursor(){
 		    		suspendWindow := suspendWindowList.Get(suspendWindowList.Length)
 			    	suspendWindowList.RemoveAt(suspendWindowList.Length)
 			    	hideWindow(suspendWindow)
-	    		} 
+	    		}
 		    }
 	    }
 
@@ -107,7 +108,7 @@ WatchCursor(){
 	    ; 		suspendId := suspendWindowList.Get(1)
 		;     	suspendWindowList.RemoveAt(1)
 		;     	hideWindow(suspendId)
-	    ; 	} 
+	    ; 	}
 		;     ; 隐藏窗口则显示
 		;     if isHidden>0 {
 		;     	showWindow(id)
@@ -117,8 +118,7 @@ WatchCursor(){
 }
 
 
-
-^Left::{
+setWindows(direction:="left"){
 	results := getSide()
 	leftMonitor := results[1]
 	rightMonitor := results[2]
@@ -136,57 +136,49 @@ WatchCursor(){
 	global leftDPI
 	global rightDPI
 
-	ahkId := WinGetID("A")
-	hiddenWindowIndex := hiddenWindowList.Find((v) => (v.id =ahkId))
-	suspendWindowIndex := suspendWindowList.Find((v) => (v.id =ahkId))
-	if hiddenWindowIndex >0 {
-		hiddenWindowList.RemoveAt(hiddenWindowIndex)
+	ahkId := WinExist("A")
+	if(ahkId){
+		hiddenWindowIndex := hiddenWindowList.Find((v) => (v.id =ahkId))
+		suspendWindowIndex := suspendWindowList.Find((v) => (v.id =ahkId))
+		if hiddenWindowIndex >0 {
+			hiddenWindowList.RemoveAt(hiddenWindowIndex)
+		}
+		if suspendWindowIndex > 0{
+			suspendWindowList.RemoveAt(suspendWindowIndex)
+		}
+		hideWindow({id:ahkId,mode:direction})
 	}
-	if suspendWindowIndex > 0{
-		suspendWindowList.RemoveAt(suspendWindowIndex)
-	}
-	hideWindow({id:ahkId,mode:"left"})
+
+}
+
+
+
+^Left::{
+	setWindows("left")
 }
 
 ^Right::{
-	results := getSide()
-	leftMonitor := results[1]
-	rightMonitor := results[2]
-	leftEdge := results[3]
-	rightEdge := results[4]
-	MonitorGet leftMonitor,,&leftTopEdge
-	MonitorGet rightMonitor,,&rightTopEdge
-	leftDPI := getDPI(leftMonitor)
-	rightDPI := getDPI(rightMonitor)
-	; 多显示器支持
-	global leftEdge
-	global rightEdge
-	global leftTopEdge
-	global rightTopEdge
-	global leftDPI
-	global rightDPI
+	setWindows("right")
 
-	ahkId := WinGetID("A")
-	;判断当前窗口是否已经隐藏，若已存在则删除
-	hiddenWindowIndex := hiddenWindowList.Find((v) => (v.id =ahkId))
-	suspendWindowIndex := suspendWindowList.Find((v) => (v.id =ahkId))
-	if hiddenWindowIndex >0 {
-		hiddenWindowList.RemoveAt(hiddenWindowIndex)
-	}
-	if suspendWindowIndex > 0{
-		suspendWindowList.RemoveAt(suspendWindowIndex)
-	}
-	hideWindow({id:ahkId,mode:"right"})
-	
 }
 
 ^F4::{
 	Reset()
 }
 
+~LButton Up::{
+	MouseGetPos(&OutputVarX, &OutputVarY, &OutputVarWin, &OutputVarControl)
+	WinGetClientPos(&OutX, &OutY, &OutWidth, &OutHeight,OutputVarWin)
+	if(OutX<=0){
+		setWindows("left")
+	}else if(OutX+OutWidth>=A_ScreenWidth){
+		setWindows("right")
+	}
+}
+
 
 hideWindow(window){
-	
+
 	windowText := "ahk_id" window.id
 
 	;最大化窗口不可隐藏
@@ -202,7 +194,7 @@ hideWindow(window){
 			NewX := rightEdge-Round(margin*rightDPI)
 			Y :=Max(Y,rightTopEdge)
 		}
-		
+
 		if H>maxHeight{
 			WinMove(,Y,,H,windowText)
 		}
@@ -247,7 +239,7 @@ isWindowMove(window){
 			return 0
 		}
 	}
-	
+
 }
 ; 列表不允许存在相同的窗口
 pushTo(array,value){
@@ -259,7 +251,7 @@ pushTo(array,value){
 createArray(a, b,length) {
 	; Calculate the step to divide the range into length parts
     arr := []
-    step := (b - a) / (length-1)  
+    step := (b - a) / (length-1)
     value := a
     Loop length {
         arr.Push(Round(value))
