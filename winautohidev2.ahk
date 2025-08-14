@@ -169,9 +169,9 @@ setWindows(direction:="left"){
 ~LButton Up::{
 	MouseGetPos(&OutputVarX, &OutputVarY, &OutputVarWin, &OutputVarControl)
 	WinGetClientPos(&OutX, &OutY, &OutWidth, &OutHeight,OutputVarWin)
-	if(OutX<=0){
+	if(OutX<0){
 		setWindows("left")
-	}else if(OutX+OutWidth>=A_ScreenWidth){
+	}else if(OutX+OutWidth>A_ScreenWidth){
 		setWindows("right")
 	}
 }
